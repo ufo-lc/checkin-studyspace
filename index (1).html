@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Study Space — Quản lý học viên</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --green:#1D9E75;--green-light:#E1F5EE;--green-dark:#0F6E56;
+  --blue:#185FA5;--blue-light:#E6F1FB;
+  --amber:#BA7517;--amber-light:#FAEEDA;
+  --red:#A32D2D;--red-light:#FCEBEB;
+  --bg:#F8F9FA;--surface:#fff;--border:#E5E7EB;
+  --text:#111;--muted:#6B7280;--mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:12px;height:56px;position:sticky;top:0;z-index:10}
+.logo{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
+.app-name{font-size:15px;font-weight:600}
+.app-sub{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:2px;margin-left:auto}
+.tab{padding:6px 14px;font-size:13px;font-weight:500;color:var(--muted);border:none;background:none;cursor:pointer;border-radius:8px;transition:all 0.15s;font-family:inherit}
+.tab:hover{background:var(--bg);color:var(--text)}
+.tab.active{background:var(--green-light);color:var(--green-dark)}
+.container{max-width:860px;margin:0 auto;padding:24px 16px}
+.page{display:none}.page.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:16px}
+.section-title{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.fg-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:5px}
+label{font-size:12px;font-weight:500;color:var(--muted)}
+input{font-size:14px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);width:100%;font-family:inherit;transition:border 0.15s}
+input:focus{outline:none;border-color:var(--green)}
+.btn{padding:9px 18px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;font-family:inherit}
+.btn:hover{background:var(--bg)}
+.btn:active{transform:scale(0.98)}
+.btn-primary{background:var(--text);color:#fff;border-color:var(--text)}
+.btn-primary:hover{opacity:0.85;background:var(--text)}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-green:hover{background:var(--green-dark);border-color:var(--green-dark)}
+.btn-full{width:100%}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none}
+.alert-ok{background:var(--green-light);color:var(--green-dark);border:1px solid #9FE1CB}
+.alert-err{background:var(--red-light);color:var(--red);border:1px solid #F7C1C1}
+.code-badge{font-family:var(--mono);font-size:22px;font-weight:600;letter-spacing:4px;color:var(--blue);background:var(--blue-light);padding:10px 20px;border-radius:8px;display:inline-block;margin-top:4px}
+.profile-box{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.avatar{width:48px;height:48px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:var(--blue);flex-shrink:0}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.info-row:last-child{border-bottom:none}
+.info-key{color:var(--muted)}
+.info-val{font-weight:500}
+.search-row{display:flex;gap:8px;margin-bottom:16px}
+.search-row input{flex:1}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 10px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);font-size:12px}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--mono);letter-spacing:1px}
+.tag-code{background:var(--blue-light);color:var(--blue)}
+.tag-ok{background:var(--green-light);color:var(--green-dark)}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.metric{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.metric-lbl{font-size:11px;color:var(--muted);margin-bottom:4px}
+.metric-val{font-size:26px;font-weight:600}
+.chart-wrap{display:flex;align-items:flex-end;gap:8px;height:110px;margin-bottom:6px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px}
+.bar{background:var(--green);border-radius:4px 4px 0 0;width:100%;min-height:4px;transition:height 0.4s}
+.bar-lbl{font-size:10px;color:var(--muted);white-space:nowrap}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.loading{text-align:center;padding:20px;color:var(--muted);font-size:13px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:-3px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ci-code-input{font-family:var(--mono);font-size:20px;letter-spacing:4px;text-transform:uppercase;text-align:center}
+@media(max-width:600px){.form-grid,.two-col{grid-template-columns:1fr}.tabs{display:none}.topbar{padding:0 16px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">📚</div>
+  <div>
+    <div class="app-name">Study Space</div>
+    <div class="app-sub">Quản lý học viên</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('register',this)">Đăng ký</button>
+    <button class="tab" onclick="showTab('checkin',this)">Check-in</button>
+    <button class="tab" onclick="showTab('students',this)">Học sinh</button>
+    <button class="tab" onclick="showTab('analytics',this)">Thống kê</button>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══ ĐĂNG KÝ ═══ -->
+<div id="page-register" class="page active">
+  <div class="card">
+    <div class="section-title">Đăng ký học sinh mới</div>
+    <div id="reg-msg" class="alert"></div>
+    <div class="form-grid">
+      <div class="form-group fg-full">
+        <label>Họ và tên</label>
+        <input id="r-name" type="text" placeholder="Nguyễn Văn A" />
+      </div>
+      <div class="form-group">
+        <label>Số điện thoại</label>
+        <input id="r-phone" type="tel" placeholder="0912345678" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input id="r-email" type="email" placeholder="example@email.com" />
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="registerStudent()">
+      <span id="reg-btn-text">Đăng ký &amp; tạo mã</span>
+    </button>
+  </div>
+  <div id="new-student-card"></div>
+</div>
+
+<!-- ═══ CHECK-IN ═══ -->
+<div id="page-checkin" class="page">
+  <div class="card">
+    <div class="section-title">Quét mã check-in</div>
+    <div class="search-row">
+      <input id="ci-code" class="ci-code-input" type="text" maxlength="5" placeholder="A3K9Z"
+        oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter')doCheckin()" />
+      <button class="btn btn-green" onclick="doCheckin()">
+        <span id="ci-btn-text">✓ Check-in</span>
+      </button>
+    </div>
+    <div id="ci-result"></div>
+  </div>
+</div>
+
+<!-- ═══ HỌC SINH ═══ -->
+<div id="page-students" class="page">
+  <div class="card" style="padding-bottom:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="section-title" style="margin:0">Danh sách học sinh</div>
+      <div style="display:flex;gap:8px">
+        <input id="search-q" type="text" placeholder="Tìm tên, mã, SĐT..." style="width:200px;font-size:13px"
+          oninput="filterTable()" />
+        <button class="btn" onclick="loadStudents()">↻ Tải lại</button>
+      </div>
+    </div>
+    <div id="student-table"></div>
+  </div>
+</div>
+
+<!-- ═══ THỐNG KÊ ═══ -->
+<div id="page-analytics" class="page">
+  <div id="analytics-wrap"></div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ─── CẤU HÌNH ────────────────────────────────────────────────
+const API_URL = 'https://script.google.com/macros/s/AKfycbyueXitO56Cg4pKV-3t1S8068AKm-5pWHwdUplEhsilwLA5E2m0pAAAtPPNwnGuy1E/exec';
+// ─────────────────────────────────────────────────────────────
+
+let allStudents = [];
+let allCheckins = [];
+
+async function api(params) {
+  const url = API_URL + '?' + new URLSearchParams(params);
+  const r = await fetch(url, { redirect: 'follow' });
+  return r.json();
+}
+// Dùng GET cho tất cả requests (tránh CORS preflight với POST)
+async function apiPost(body) {
+  const url = API_URL + '?' + new URLSearchParams(body);
+  const r = await fetch(url, { redirect: 'follow' });
+  return r.json();
+}
+
+function initials(name) {
+  const p = name.trim().split(/\s+/);
+  return p.length >= 2 ? (p[0][0] + p[p.length-1][0]).toUpperCase() : name.slice(0,2).toUpperCase();
+}
+function fmtDate(d) {
+  return new Date(d).toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+function fmtDT(d) {
+  const dt = new Date(d);
+  return dt.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'}) + ' ' +
+    dt.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+}
+
+function showTab(t, el) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('page-'+t).classList.add('active');
+  if(t==='students') loadStudents();
+  if(t==='analytics') loadAnalytics();
+}
+
+function showMsg(id, type, html) {
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  el.className = 'alert ' + (type==='ok' ? 'alert-ok' : 'alert-err');
+  el.innerHTML = html;
+  if(type==='ok') setTimeout(() => el.style.display='none', 5000);
+}
+
+// ─── ĐĂNG KÝ ─────────────────────────────────────────────────
+async function registerStudent() {
+  const name  = document.getElementById('r-name').value.trim();
+  const phone = document.getElementById('r-phone').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  if (!name || !phone || !email) { showMsg('reg-msg','err','Vui lòng điền đầy đủ họ tên, SĐT và email.'); return; }
+  const btn = document.getElementById('reg-btn-text');
+  btn.innerHTML = '<span class="spinner"></span>Đang tạo...';
+  try {
+    const res = await apiPost({ action:'register', name, phone, email });
+    if (res.error) { showMsg('reg-msg','err', res.error); return; }
+    showMsg('reg-msg','ok','Đăng ký thành công!');
+    ['r-name','r-phone','r-email'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('new-student-card').innerHTML =
+      `<div class="card" style="border:2px solid var(--green)">
+        <div class="profile-box">
+          <div class="avatar">${initials(name)}</div>
+          <div>
+            <div style="font-size:15px;font-weight:600">${name}</div>
+            <span class="tag tag-ok">Mới đăng ký</span>
+          </div>
+        </div>
+        <div class="info-row"><span class="info-key">Mã học sinh</span>
+          <span class="code-badge">${res.code}</span></div>
+        <div class="info-row"><span class="info-key">Số điện thoại</span><span class="info-val">${phone}</span></div>
+        <div class="info-row"><span class="info-key">Email</span><span class="info-val">${email}</span></div>
+        <p style="font-size:12px;color:var(--muted);margin-top:12px;text-align:center">
+          📌 Lưu mã này lại và đưa cho học sinh để check-in các lần sau
+        </p>
+      </div>`;
+  } catch(e) {
+    showMsg('reg-msg','err','Lỗi kết nối. Kiểm tra lại API_URL.');
+  } finally {
+    btn.textContent = 'Đăng ký & tạo mã';
+  }
+}
+
+// ─── CHECK-IN ─────────────────────────────────────────────────
+async function doCheckin() {
+  const code = document.getElementById('ci-code').value.trim().toUpperCase();
+  const res_el = document.getElementById('ci-result');
+  if (code.length !== 5) { res_el.innerHTML='<div class="alert alert-err" style="display:block">Mã phải đúng 5 ký tự.</div>'; return; }
+  const btn = document.getElementById('ci-btn-text');
+  btn.innerHTML = '<span class="spinner"></span>';
+  res_el.innerHTML = '';
+  try {
+    const res = await apiPost({ action:'checkin', code });
+    if (res.error) {
+      res_el.innerHTML = `<div class="alert alert-err" style="display:block">❌ ${res.error}: <b>${code}</b></div>`;
+      return;
+    }
+    document.getElementById('ci-code').value='';
+    res_el.innerHTML =
+      `<div class="card" style="border:2px solid var(--green)">
+        <div class="profile-box">
+          <div class="avatar">${initials(res.name)}</div>
+          <div>
+            <div style="font-size:15px;font-weight:600">${res.name}</div>
+            <span class="tag tag-ok">✓ Check-in thành công</span>
+          </div>
+        </div>
+        <div class="info-row"><span class="info-key">Thời gian</span>
+          <span class="info-val">${new Date().toLocaleString('vi-VN')}</span></div>
+        <div class="info-row"><span class="info-key">SĐT</span><span class="info-val">${res.phone}</span></div>
+        <div class="info-row"><span class="info-key">Tổng lần đã đến</span>
+          <span class="info-val" style="color:var(--green);font-size:18px">${res.totalCheckins} lần</span></div>
+      </div>`;
+  } catch(e) {
+    res_el.innerHTML = `<div class="alert alert-err" style="display:block">Lỗi kết nối.</div>`;
+  } finally {
+    btn.textContent = '✓ Check-in';
+  }
+}
+
+// ─── DANH SÁCH ───────────────────────────────────────────────
+async function loadStudents() {
+  const wrap = document.getElementById('student-table');
+  wrap.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải...</div>';
+  try {
+    const res = await api({ action:'getAll' });
+    allStudents = res.students || [];
+    allCheckins = res.checkins || [];
+    filterTable();
+  } catch(e) {
+    wrap.innerHTML = '<div class="empty">Lỗi kết nối.</div>';
+  }
+}
+
+function filterTable() {
+  const q = (document.getElementById('search-q')||{value:''}).value.toLowerCase();
+  const list = allStudents.filter(r =>
+    (r[1]||'').toLowerCase().includes(q) ||
+    (r[0]||'').toLowerCase().includes(q) ||
+    (r[2]||'').includes(q) ||
+    (r[3]||'').toLowerCase().includes(q)
+  );
+  const wrap = document.getElementById('student-table');
+  if (!list.length) { wrap.innerHTML='<div class="empty">Không tìm thấy học sinh nào.</div>'; return; }
+  let h = `<table><thead><tr><th>Học sinh</th><th>Mã</th><th>SĐT</th><th>Check-in</th><th>Lần cuối</th></tr></thead><tbody>`;
+  list.forEach(r => {
+    const code = r[0], name = r[1], phone = r[2], email = r[3];
+    const cis = allCheckins.filter(c => c[0]===code);
+    const last = cis.length ? fmtDT(cis[cis.length-1][2]) : '—';
+    h += `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="avatar" style="width:30px;height:30px;font-size:11px">${initials(name||'?')}</div>
+        <div><div style="font-weight:500">${name}</div>
+        <div style="font-size:11px;color:var(--muted)">${email}</div></div></div></td>
+      <td><span class="tag tag-code">${code}</span></td>
+      <td>${phone}</td>
+      <td><b style="color:var(--green)">${cis.length}</b></td>
+      <td style="color:var(--muted)">${last}</td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  wrap.innerHTML = h;
+}
+
+// ─── THỐNG KÊ ─────────────────────────────────────────────────
+async function loadAnalytics() {
+  const wrap = document.getElementById('analytics-wrap');
+  wrap.innerHTML = '<div class="loading"><span class="spinner"></span>Đang tải dữ liệu...</div>';
+  try {
+    const res = await api({ action:'getAll' });
+    const students = res.students || [];
+    const checkins = res.checkins || [];
+    renderAnalytics(students, checkins);
+  } catch(e) {
+    wrap.innerHTML = '<div class="empty">Lỗi kết nối.</div>';
+  }
+}
+
+function renderAnalytics(students, checkins) {
+  const total   = students.length;
+  const totalCI = checkins.length;
+  const today   = new Date().toDateString();
+  const todayCI = checkins.filter(c => new Date(c[2]).toDateString()===today).length;
+  const active  = new Set(checkins.map(c=>c[0])).size;
+
+  const days = {};
+  checkins.forEach(c => {
+    const d = fmtDate(c[2]);
+    days[d] = (days[d]||0) + 1;
+  });
+  const dayArr = Object.keys(days).sort((a,b)=>
+    new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-'))
+  ).slice(-7);
+  const maxV = dayArr.reduce((m,d)=>Math.max(m,days[d]),1);
+
+  const bars = dayArr.length
+    ? dayArr.map(d=>{
+        const h = Math.round((days[d]/maxV)*80)+20;
+        return `<div class="bar-col"><div class="bar" style="height:${h}px" title="${days[d]} lần"></div>
+          <div class="bar-lbl">${d.slice(0,5)}</div></div>`;
+      }).join('')
+    : '<div style="width:100%;text-align:center;color:var(--muted);font-size:12px;padding-top:40px">Chưa có dữ liệu check-in</div>';
+
+  const countMap = {};
+  checkins.forEach(c => countMap[c[0]]=(countMap[c[0]]||0)+1);
+  const topStudents = students
+    .map(r => ({name:r[1],code:r[0],count:countMap[r[0]]||0}))
+    .filter(x=>x.count>0)
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,5);
+
+  const recent = [...checkins].reverse().slice(0,10);
+
+  const nameMap = {};
+  students.forEach(r => nameMap[r[0]]=r[1]);
+
+  document.getElementById('analytics-wrap').innerHTML =
+    `<div class="metric-grid">
+      <div class="metric"><div class="metric-lbl">Tổng đăng ký</div><div class="metric-val">${total}</div></div>
+      <div class="metric"><div class="metric-lbl">Đã từng đến</div><div class="metric-val">${active}</div></div>
+      <div class="metric"><div class="metric-lbl">Tổng lượt check-in</div><div class="metric-val">${totalCI}</div></div>
+      <div class="metric"><div class="metric-lbl">Hôm nay</div>
+        <div class="metric-val" style="color:var(--green)">${todayCI}</div></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">📊 Check-in 7 ngày gần nhất</div>
+      <div class="chart-wrap">${bars}</div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="section-title">🏆 Top học sinh chuyên cần</div>
+        ${topStudents.length
+          ? topStudents.map((x,i)=>
+              `<div class="info-row">
+                <span class="info-key"><span style="color:#BA7517;margin-right:4px">${i+1}.</span>${x.name}</span>
+                <span class="info-val" style="color:var(--green)">${x.count} lần</span>
+              </div>`).join('')
+          : '<div class="empty">Chưa có dữ liệu</div>'}
+      </div>
+      <div class="card">
+        <div class="section-title">🕐 Check-in gần nhất</div>
+        ${recent.length
+          ? recent.map(c=>
+              `<div class="info-row">
+                <span class="info-key">${nameMap[c[0]]||c[0]}</span>
+                <span style="font-size:11px;color:var(--muted)">${fmtDT(c[2])}</span>
+              </div>`).join('')
+          : '<div class="empty">Chưa có dữ liệu</div>'}
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>
